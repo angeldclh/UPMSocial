@@ -18,6 +18,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import model.Usuario;
 
 /**
@@ -35,6 +36,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         super(Usuario.class);
     }
 
+    //Añadir usuario: se le da el XML sin el id (clave primaria)
     @POST
     @Override
     @Consumes({MediaType.APPLICATION_XML})
@@ -42,6 +44,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         super.create(entity);
     }
 
+    //Modificar el perfil de un usuario con id {id}
     @PUT
     @Path("{id}")
     @Consumes({MediaType.APPLICATION_XML})
@@ -49,26 +52,35 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         super.edit(entity);
     }
 
+    //Eliminar usuario
     @DELETE
     @Path("{id}")
     public void remove(@PathParam("id") Integer id) {
         super.remove(super.find(id));
     }
 
+    
+    //Obtener el XML de un usuario
     @GET
     @Path("{id}")
     @Produces({MediaType.APPLICATION_XML})
-    public Usuario find(@PathParam("id") Integer id) {
-        return super.find(id);
+    public Response find(@PathParam("id") Integer id) {
+        if (super.find(id) == null)
+                return Response.status(Response.Status.NOT_FOUND).build();
+        return Response.ok(super.find(id)).build();
     }
 
+    //Obtener lista de todos los usuarios
     @GET
-    @Override
     @Produces({MediaType.APPLICATION_XML})
-    public List<Usuario> findAll() {
-        return super.findAll();
+    public Response findAll2() {
+        List<Usuario> lista = super.findAll();
+        if (lista.isEmpty())
+            return Response.status(Response.Status.NOT_FOUND).build();
+        return Response.ok(super.findAll()).build();
     }
 
+    //
     @GET
     @Path("{from}/{to}")
     @Produces({MediaType.APPLICATION_XML})
@@ -76,6 +88,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         return super.findRange(new int[]{from, to});
     }
 
+    //Obtener el número de usuarios de la red
     @GET
     @Path("count")
     @Produces(MediaType.TEXT_PLAIN)
