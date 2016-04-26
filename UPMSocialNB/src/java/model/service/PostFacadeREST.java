@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package model.resources;
+package model.service;
 
 import java.util.List;
 import javax.ejb.Stateless;
@@ -25,7 +25,7 @@ import model.Post;
  * @author angel
  */
 @Stateless
-@Path("model.post")
+@Path("posts")
 public class PostFacadeREST extends AbstractFacade<Post> {
 
     @PersistenceContext(unitName = "UPMSocialNBPU")
@@ -37,41 +37,41 @@ public class PostFacadeREST extends AbstractFacade<Post> {
 
     @POST
     @Override
-    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_XML})
     public void create(Post entity) {
         super.create(entity);
     }
 
     @PUT
     @Path("{id}")
-    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public void edit(@PathParam("id") Integer id, Post entity) {
+    @Consumes({MediaType.APPLICATION_XML})
+    public void edit(@PathParam("id") String id, Post entity) {
         super.edit(entity);
     }
 
     @DELETE
     @Path("{id}")
-    public void remove(@PathParam("id") Integer id) {
+    public void remove(@PathParam("id") String id) {
         super.remove(super.find(id));
     }
 
     @GET
     @Path("{id}")
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public Post find(@PathParam("id") Integer id) {
+    @Produces({MediaType.APPLICATION_XML})
+    public Post find(@PathParam("id") String id) {
         return super.find(id);
     }
 
     @GET
     @Override
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_XML})
     public List<Post> findAll() {
         return super.findAll();
     }
 
     @GET
     @Path("{from}/{to}")
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_XML})
     public List<Post> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
         return super.findRange(new int[]{from, to});
     }

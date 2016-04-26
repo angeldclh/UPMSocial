@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package model.resources;
+package model.service;
 
 import java.util.List;
 import javax.ejb.Stateless;
@@ -18,7 +18,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import model.Usuario;
 
 /**
@@ -26,7 +25,7 @@ import model.Usuario;
  * @author angel
  */
 @Stateless
-@Path("usuario")
+@Path("usuarios")
 public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
 
     @PersistenceContext(unitName = "UPMSocialNBPU")
@@ -36,59 +35,47 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         super(Usuario.class);
     }
 
-    //Añadir usuario: se le da el XML sin el id (clave primaria)
     @POST
     @Override
-    @Consumes({MediaType.APPLICATION_XML})
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public void create(Usuario entity) {
         super.create(entity);
     }
 
-    //Modificar el perfil de un usuario con id {id}
     @PUT
     @Path("{id}")
-    @Consumes({MediaType.APPLICATION_XML})
-    public void edit(@PathParam("id") Integer id, Usuario entity) {
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public void edit(@PathParam("id") String id, Usuario entity) {
         super.edit(entity);
     }
 
-    //Eliminar usuario
     @DELETE
     @Path("{id}")
-    public void remove(@PathParam("id") Integer id) {
+    public void remove(@PathParam("id") String id) {
         super.remove(super.find(id));
     }
 
-    
-    //Obtener el XML de un usuario
     @GET
     @Path("{id}")
-    @Produces({MediaType.APPLICATION_XML})
-    public Response find(@PathParam("id") Integer id) {
-        if (super.find(id) == null)
-                return Response.status(Response.Status.NOT_FOUND).build();
-        return Response.ok(super.find(id)).build();
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Usuario find(@PathParam("id") String id) {
+        return super.find(id);
     }
 
-    //Obtener lista de todos los usuarios
     @GET
-    @Produces({MediaType.APPLICATION_XML})
-    public Response findAll2() {
-        List<Usuario> lista = super.findAll();
-        if (lista.isEmpty())
-            return Response.status(Response.Status.NOT_FOUND).build();
-        return Response.ok(super.findAll()).build();
+    @Override
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public List<Usuario> findAll() {
+        return super.findAll();
     }
 
-    //
     @GET
     @Path("{from}/{to}")
-    @Produces({MediaType.APPLICATION_XML})
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public List<Usuario> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
         return super.findRange(new int[]{from, to});
     }
 
-    //Obtener el número de usuarios de la red
     @GET
     @Path("count")
     @Produces(MediaType.TEXT_PLAIN)

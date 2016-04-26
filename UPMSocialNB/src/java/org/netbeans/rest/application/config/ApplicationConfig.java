@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package model.resources;
+package org.netbeans.rest.application.config;
 
 import java.util.Set;
 import javax.ws.rs.core.Application;
@@ -29,8 +29,8 @@ public class ApplicationConfig extends Application {
      * If required, comment out calling this method in getClasses().
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
-        resources.add(model.resources.PostFacadeREST.class);
-        resources.add(model.resources.UsuarioFacadeREST.class);
+        resources.add(model.service.PostFacadeREST.class);
+        resources.add(model.service.UsuarioFacadeREST.class);
     }
     
 }

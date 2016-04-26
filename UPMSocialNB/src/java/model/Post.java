@@ -10,8 +10,6 @@ import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -40,11 +38,11 @@ public class Post implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue (strategy = GenerationType.AUTO)
     @Basic(optional = false)
     @NotNull
+    @Size(min = 1, max = 90)
     @Column(name = "IDPOST")
-    private Integer idpost;
+    private String idpost;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 140)
@@ -55,28 +53,29 @@ public class Post implements Serializable {
     @Column(name = "FECHAHORA")
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechahora;
-    @JoinColumn(name = "IDUSUARIO", referencedColumnName = "IDUSUARIO")
-    @ManyToOne(optional = false)
-    private Usuario idusuario;
+    @JoinColumn(name = "NOMBREUSUARIO", referencedColumnName = "NOMBREUSUARIO")
+    @ManyToOne
+    private Usuario nombreusuario;
 
     public Post() {
     }
 
-    public Post(Integer idpost) {
+    public Post(String idpost) {
         this.idpost = idpost;
     }
 
-    public Post(Integer idpost, String texto, Date fechahora) {
-        this.idpost = idpost;
+    public Post(String idpost, String texto, Date fechahora) {
+        //this.idpost = idpost;
+        this.idpost = this.nombreusuario.getNombreusuario() + this.fechahora.toString();
         this.texto = texto;
         this.fechahora = fechahora;
     }
 
-    public Integer getIdpost() {
+    public String getIdpost() {
         return idpost;
     }
 
-    public void setIdpost(Integer idpost) {
+    public void setIdpost(String idpost) {
         this.idpost = idpost;
     }
 
@@ -96,12 +95,12 @@ public class Post implements Serializable {
         this.fechahora = fechahora;
     }
 
-    public Usuario getIdusuario() {
-        return idusuario;
+    public Usuario getNombreusuario() {
+        return nombreusuario;
     }
 
-    public void setIdusuario(Usuario idusuario) {
-        this.idusuario = idusuario;
+    public void setNombreusuario(Usuario nombreusuario) {
+        this.nombreusuario = nombreusuario;
     }
 
     @Override

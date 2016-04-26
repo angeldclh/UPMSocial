@@ -8,11 +8,8 @@ package model;
 import java.io.Serializable;
 import java.util.Collection;
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -35,24 +32,24 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Usuario.findAll", query = "SELECT u FROM Usuario u"),
-    @NamedQuery(name = "Usuario.findByIdusuario", query = "SELECT u FROM Usuario u WHERE u.idusuario = :idusuario"),
     @NamedQuery(name = "Usuario.findByNombreusuario", query = "SELECT u FROM Usuario u WHERE u.nombreusuario = :nombreusuario"),
+    @NamedQuery(name = "Usuario.findByNombrereal", query = "SELECT u FROM Usuario u WHERE u.nombrereal = :nombrereal"),
     @NamedQuery(name = "Usuario.findByEmail", query = "SELECT u FROM Usuario u WHERE u.email = :email"),
     @NamedQuery(name = "Usuario.findByPassword", query = "SELECT u FROM Usuario u WHERE u.password = :password")})
 public class Usuario implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue (strategy = GenerationType.AUTO)
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "IDUSUARIO")
-    private Integer idusuario;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 15)
     @Column(name = "NOMBREUSUARIO")
     private String nombreusuario;
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 30)
+    @Column(name = "NOMBREREAL")
+    private String nombrereal;
     // @Pattern(regexp="[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message="Invalid email")//if the field contains email address consider using this annotation to enforce field validation
     @Basic(optional = false)
     @NotNull
@@ -64,42 +61,28 @@ public class Usuario implements Serializable {
     @Size(min = 1, max = 15)
     @Column(name = "PASSWORD")
     private String password;
-    @JoinTable(name = "USUARIO_AMIGO_USUARIO2", joinColumns = {
-        @JoinColumn(name = "IDUSUARIO1", referencedColumnName = "IDUSUARIO")}, inverseJoinColumns = {
-        @JoinColumn(name = "IDUSUARIO2", referencedColumnName = "IDUSUARIO")})
+    @JoinTable(name = "USUARIO1_AMIGO_USUARIO2", joinColumns = {
+        @JoinColumn(name = "USUARIO1", referencedColumnName = "NOMBREUSUARIO")}, inverseJoinColumns = {
+        @JoinColumn(name = "USUARIO2", referencedColumnName = "NOMBREUSUARIO")})
     @ManyToMany
     private Collection<Usuario> usuarioCollection;
     @ManyToMany(mappedBy = "usuarioCollection")
     private Collection<Usuario> usuarioCollection1;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "idusuario")
+    @OneToMany(mappedBy = "nombreusuario")
     private Collection<Post> postCollection;
 
     public Usuario() {
     }
 
-    public Usuario(Integer idusuario) {
-        this.idusuario = idusuario;
+    public Usuario(String nombreusuario) {
+        this.nombreusuario = nombreusuario;
     }
 
-    public Usuario(String nombreusuario, String email, String password) {
+    public Usuario(String nombreusuario, String nombrereal, String email, String password) {
         this.nombreusuario = nombreusuario;
+        this.nombrereal = nombrereal;
         this.email = email;
         this.password = password;
-    }
-    
-    public Usuario(Integer idusuario, String nombreusuario, String email, String password) {
-        this.idusuario = idusuario;
-        this.nombreusuario = nombreusuario;
-        this.email = email;
-        this.password = password;
-    }
-
-    public Integer getIdusuario() {
-        return idusuario;
-    }
-
-    public void setIdusuario(Integer idusuario) {
-        this.idusuario = idusuario;
     }
 
     public String getNombreusuario() {
@@ -108,6 +91,14 @@ public class Usuario implements Serializable {
 
     public void setNombreusuario(String nombreusuario) {
         this.nombreusuario = nombreusuario;
+    }
+
+    public String getNombrereal() {
+        return nombrereal;
+    }
+
+    public void setNombrereal(String nombrereal) {
+        this.nombrereal = nombrereal;
     }
 
     public String getEmail() {
@@ -156,7 +147,7 @@ public class Usuario implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (idusuario != null ? idusuario.hashCode() : 0);
+        hash += (nombreusuario != null ? nombreusuario.hashCode() : 0);
         return hash;
     }
 
@@ -167,7 +158,7 @@ public class Usuario implements Serializable {
             return false;
         }
         Usuario other = (Usuario) object;
-        if ((this.idusuario == null && other.idusuario != null) || (this.idusuario != null && !this.idusuario.equals(other.idusuario))) {
+        if ((this.nombreusuario == null && other.nombreusuario != null) || (this.nombreusuario != null && !this.nombreusuario.equals(other.nombreusuario))) {
             return false;
         }
         return true;
@@ -175,7 +166,7 @@ public class Usuario implements Serializable {
 
     @Override
     public String toString() {
-        return "model.Usuario[ idusuario=" + idusuario + " ]";
+        return "model.Usuario[ nombreusuario=" + nombreusuario + " ]";
     }
     
 }
