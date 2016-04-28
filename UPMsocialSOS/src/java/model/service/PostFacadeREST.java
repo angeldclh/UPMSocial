@@ -49,8 +49,9 @@ public class PostFacadeREST extends AbstractFacade<Post> {
     @Consumes({"application/xml"})
     public Response create2(Post entity, @Context UriInfo uriInfo) {
         entity.setFechahora(new Date());
-        String s = entity.getNombreusuario().getNombreusuario() + entity.getFechahora().toString();
-        entity.setIdpost(s.replaceAll("\\s", ""));
+        //El id del post es la concatenación del nombre de usuario, el string "Post" y el hash de la fecha
+        entity.setIdpost(entity.getNombreusuario().getNombreusuario() 
+                + "Post" + entity.getFechahora().toString().hashCode());
         create(entity);
         UriBuilder builder = uriInfo.getAbsolutePathBuilder();
         builder.path(entity.getIdpost());

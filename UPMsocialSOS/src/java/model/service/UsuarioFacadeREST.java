@@ -59,7 +59,22 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         return Response.created(builder.build()).build();
     }
 
-    //Añadir un usuario a la lista de amigos
+    
+    //Buscar usuarios (posibles amigos) por patrón
+    //Si la URI es /search devuelve todos los usuarios de la red
+    @GET
+    @Path("search")
+    @Produces({"application/xml"})
+    public List<Usuario> findPattern(@QueryParam("id") String id) {
+        if(id==null) id = "";
+        List results = em.createNamedQuery("Usuario.findByPattern")
+                .setParameter("pattern", "%"+id+"%")
+                .getResultList();
+        return results;
+    }
+
+    
+    //Añadir un usuario a la lista de amigos: se le pasa text/plain con su nombreusuario (PK)
     @POST
     @Path("{id}/amigos")
     @Consumes({"text/plain"})
@@ -114,16 +129,6 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     }
 
     
-    //Buscar usuarios (posibles amigos) por patrón
-    @GET
-    @Path("search")
-    @Produces({"application/xml"})
-    public List<Usuario> findPattern(@QueryParam("id") String id) {
-        List results = em.createNamedQuery("Usuario.findByPattern")
-                .setParameter("pattern", "%"+id+"%")
-                .getResultList();
-        return results;
-    }
 
     //Buscar usuario por id. Devuelve un XML con su perfil
     @GET
