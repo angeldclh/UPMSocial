@@ -31,7 +31,7 @@ import model.Usuario;
  * @author RAFAEL
  */
 @Stateless
-@Path("usuarios")
+@Path("users")
 public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
 
     @PersistenceContext(unitName = "UPMsocialSOSPU")
@@ -78,7 +78,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     
     //Tira un bonito Null Pointer
     @GET
-    @Path("{id}/amigos")
+    @Path("{id}/friends")
     @Produces({"application/xml"})
     public List<Usuario> findFriend(@QueryParam("id") String id, @QueryParam("from")
     Integer from, @QueryParam("to") Integer to){
@@ -161,6 +161,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         return super.find(id);
     }
 
+    //Devuelve una lista con todos los usuarios
     @GET
     @Override
     @Produces({"application/xml"})

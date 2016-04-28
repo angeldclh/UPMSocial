@@ -30,7 +30,7 @@ import model.Usuario;
  * @author RAFAEL
  */
 @Stateless
-@Path("/usuarios/{user}/posts")
+@Path("/users/{id}/posts")
 public class PostFacadeREST extends AbstractFacade<Post> {
 
     @PersistenceContext(unitName = "UPMsocialSOSPU")
@@ -46,9 +46,11 @@ public class PostFacadeREST extends AbstractFacade<Post> {
         super.create(entity);
     }
 
+    //Se recibe solo texto plano. El usuario se obtiene de la URI y la fecha es la actual
     @POST
-    @Consumes({"application/xml"})
-    public Response create2(@PathParam("user") String id, Post entity, @Context UriInfo uriInfo) {
+    @Consumes({"text/plain"})
+    public Response create2(@PathParam("id") String id, String texto, @Context UriInfo uriInfo) {
+        Post entity = new Post();
         Usuario u = (Usuario) em.createNamedQuery("Usuario.findByNombreusuario")
                 .setParameter("nombreusuario", id)
                 .getSingleResult();
@@ -57,28 +59,33 @@ public class PostFacadeREST extends AbstractFacade<Post> {
         //El id del post es la concatenación del nombre de usuario, el string "Post" y el hash de la fecha
         entity.setIdpost(entity.getNombreusuario().getNombreusuario() 
                 + "Post" + entity.getFechahora().toString().hashCode());
+        entity.setTexto(texto);
         create(entity);
+        //Para la response
         UriBuilder builder = uriInfo.getAbsolutePathBuilder();
         builder.path(entity.getIdpost());
         return Response.created(builder.build()).build();
     }
 
-    //Editar un POST
+    //Editar un POST (solo el texto y obviamente la fecha)
     @PUT
-    @Path("{id}")
-    @Consumes({"application/xml"})
-    public void edit(@PathParam("id") String id, Post entity) {
+    @Path("{postid}")
+    @Consumes({"text/plain"})
+    public void edit(@PathParam("postid") String id, String texto) {
+        Post entity = find(id);
+        entity.setTexto(texto);
         entity.setFechahora(new Date());
         super.edit(entity);
     }
 
-    //Eliminar un POST
+    //Eliminar un POST pasándole su id
     @DELETE
     @Path("{id}")
     public void remove(@PathParam("id") String id) {
         super.remove(super.find(id));
     }
 
+    //Devuelve un Post dado su id
     @GET
     @Path("{id}")
     @Produces({"application/xml"})
@@ -86,8 +93,10 @@ public class PostFacadeREST extends AbstractFacade<Post> {
         return super.find(id);
     }
 
+    //Devuelve todos los posts de UPMSocial (para debug)
     @GET
     @Override
+    @Path("all")
     @Produces({"application/xml"})
     public List<Post> findAll() {
         return super.findAll();
