@@ -47,7 +47,6 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     }
 
     //    Crea un nuevo USUARIO
-
     @POST
     @Consumes({"application/xml"})
     public Response create2(Usuario entity, @Context UriInfo uriInfo) {
@@ -66,15 +65,16 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         if (user == null || super.find(entity) == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        /*if(consulta saber si ya es amigo del amigo de entrada){
-         return Response.status(Response.Status.UNAUTHORIZED).build();
-         }*/
-        Collection<Usuario> lista = user.getUsuarioCollection();
+        Collection<Usuario> lista = user.getUsuarioCollection();  
         Usuario amigo = super.find(entity);
+        //Si ya es amigo del amigo de entrada*/
+        if(lista.contains(amigo)){
+         return Response.status(Response.Status.UNAUTHORIZED).build();
+        }   
         lista.add(amigo);
         user.setUsuarioCollection(lista);
-        //getEntityManager().merge(user);
-        return Response.ok(getEntityManager().merge(user)).build();
+        getEntityManager().merge(user);
+        return Response.noContent().build();
     }
 
     //Eliminar usuario de la lista de amigos
@@ -88,11 +88,12 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         
-        //hacer operaciones en la basde de datos
+        
         Collection<Usuario> lista = user.getUsuarioCollection();
         lista.remove(amigo);
         user.setUsuarioCollection(lista);
-        return Response.ok(getEntityManager().merge(user)).build();
+        getEntityManager().merge(user);
+        return Response.noContent().build();
     }
 
     //Modifica el PERFIL de USUARIO
