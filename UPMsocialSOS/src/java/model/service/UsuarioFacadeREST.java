@@ -73,6 +73,29 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         return results;
     }
 
+    //Obtener lista de amigos y filtrarla por nombre o limitar la cantidad de 
+    //información obtenida por número de amigos
+    
+    //Tira un bonito Null Pointer
+    @GET
+    @Path("{id}/amigos")
+    @Produces({"application/xml"})
+    public List<Usuario> findFriend(@QueryParam("id") String id, @QueryParam("from")
+    Integer from, @QueryParam("to") Integer to){
+        if(id==null) id = "";
+        List results = em.createNamedQuery("Usuario.findFriends")
+                .setParameter("pattern", "%"+id+"%") //Búsqueda an: salen angel y ana, pero no manuel
+                .getResultList();
+        
+        if(from != 0 && to != 0){
+            results = results.subList(from-1, to+1);
+        }
+        
+        return results;
+    }
+    
+    
+    
     
     //Añadir un usuario a la lista de amigos: se le pasa text/plain con su nombreusuario (PK)
     @POST

@@ -23,13 +23,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import model.Post;
+import model.Usuario;
 
 /**
  *
  * @author RAFAEL
  */
 @Stateless
-@Path("posts")
+@Path("/usuarios/{user}/posts")
 public class PostFacadeREST extends AbstractFacade<Post> {
 
     @PersistenceContext(unitName = "UPMsocialSOSPU")
@@ -47,7 +48,11 @@ public class PostFacadeREST extends AbstractFacade<Post> {
 
     @POST
     @Consumes({"application/xml"})
-    public Response create2(Post entity, @Context UriInfo uriInfo) {
+    public Response create2(@PathParam("user") String id, Post entity, @Context UriInfo uriInfo) {
+        Usuario u = (Usuario) em.createNamedQuery("Usuario.findByNombreusuario")
+                .setParameter("nombreusuario", id)
+                .getSingleResult();
+        entity.setNombreusuario(u);
         entity.setFechahora(new Date());
         //El id del post es la concatenación del nombre de usuario, el string "Post" y el hash de la fecha
         entity.setIdpost(entity.getNombreusuario().getNombreusuario() 
@@ -102,6 +107,14 @@ public class PostFacadeREST extends AbstractFacade<Post> {
         return String.valueOf(super.count());
     }
 
+    
+    //Obtener los posts de un usuario y filtrar la lista por fecha o limitar la
+    //cantidad de información obtenida por número de posts
+    @GET
+    @Path("search")
+    
+    
+    
     @Override
     protected EntityManager getEntityManager() {
         return em;
