@@ -168,11 +168,11 @@ passwordMySQL.png
 
 ## NetBeans
 
-UPMSocialNB/nbproject/private/
-UPMSocialNB/build/
-UPMSocialNB/nbbuild/
-UPMSocialNB/dist/
-UPMSocialNB/nbdist/
-UPMSocialNB/nbactions.xml
-UPMSocialNB/.nb-gradle/
+UPMsocialSOS/nbproject/private/
+UPMsocialSOS/build/
+UPMsocialSOS/nbbuild/
+UPMsocialSOS/dist/
+UPMsocialSOS/nbdist/
+UPMsocialSOS/nbactions.xml
+UPMsocialSOS/.nb-gradle/
 
