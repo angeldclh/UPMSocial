@@ -30,7 +30,7 @@ import model.Usuario;
  * @author RAFAEL
  */
 @Stateless
-@Path("/users/{id}/posts")
+@Path("/users/{userid}/posts")
 public class PostFacadeREST extends AbstractFacade<Post> {
 
     @PersistenceContext(unitName = "UPMsocialSOSPU")
@@ -49,7 +49,7 @@ public class PostFacadeREST extends AbstractFacade<Post> {
     //Se recibe solo texto plano. El usuario se obtiene de la URI y la fecha es la actual
     @POST
     @Consumes({"text/plain"})
-    public Response create2(@PathParam("id") String id, String texto, @Context UriInfo uriInfo) {
+    public Response create2(@PathParam("userid") String id, String texto, @Context UriInfo uriInfo) {
         Post entity = new Post();
         Usuario u = (Usuario) em.createNamedQuery("Usuario.findByNombreusuario")
                 .setParameter("nombreusuario", id)
@@ -80,16 +80,16 @@ public class PostFacadeREST extends AbstractFacade<Post> {
 
     //Eliminar un POST pasándole su id
     @DELETE
-    @Path("{id}")
-    public void remove(@PathParam("id") String id) {
+    @Path("{postid}")
+    public void remove(@PathParam("postid") String id) {
         super.remove(super.find(id));
     }
 
     //Devuelve un Post dado su id
     @GET
-    @Path("{id}")
+    @Path("{postid}")
     @Produces({"application/xml"})
-    public Post find(@PathParam("id") String id) {
+    public Post find(@PathParam("postid") String id) {
         return super.find(id);
     }
 
@@ -101,7 +101,32 @@ public class PostFacadeREST extends AbstractFacade<Post> {
     public List<Post> findAll() {
         return super.findAll();
     }
-
+    
+    //Obtener los posts de un usuario y filtrar la lista por fecha o limitar la
+    //cantidad de información obtenida por número de posts
+    @GET
+    @Produces({"application/xml"})
+    public List<Post> showPosts(@PathParam("userid") String userid){
+        //Obtener usuario u (autor de los posts) a partir de su id
+        Usuario u = (Usuario) em.createNamedQuery("Usuario.findByNombreusuario")
+                .setParameter("nombreusuario", userid)
+                .getSingleResult();
+        //A esta query hay que pasarle una variable de la clase Usuario (u)
+        return em.createNamedQuery("Post.findByUser")
+                .setParameter("nombreusuario", u)
+                .getResultList();
+    }
+    
+    
+    
+    
+    
+///////////////////////////////
+    
+    
+    
+    
+    //Devuelve los posts de todos los usuarios en el intervalo (from, to). Orden cronológico
     @GET
     @Path("{from}/{to}")
     @Produces({"application/xml"})
@@ -109,21 +134,16 @@ public class PostFacadeREST extends AbstractFacade<Post> {
         return super.findRange(new int[]{from, to});
     }
 
+    //Devuelve el número de posts
     @GET
     @Path("count")
     @Produces("text/plain")
     public String countREST() {
         return String.valueOf(super.count());
     }
-
+  
     
-    //Obtener los posts de un usuario y filtrar la lista por fecha o limitar la
-    //cantidad de información obtenida por número de posts
-    @GET
-    @Path("search")
-    
-    
-    
+    //Necesario para hacer consultas
     @Override
     protected EntityManager getEntityManager() {
         return em;

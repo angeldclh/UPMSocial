@@ -31,9 +31,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Post.findAll", query = "SELECT p FROM Post p"),
-    @NamedQuery(name = "Post.findByIdpost", query = "SELECT p FROM Post p WHERE p.idpost = :idpost"),
-    @NamedQuery(name = "Post.findByTexto", query = "SELECT p FROM Post p WHERE p.texto = :texto"),
-    @NamedQuery(name = "Post.findByFechahora", query = "SELECT p FROM Post p WHERE p.fechahora = :fechahora")})
+    @NamedQuery(name = "Post.findByIdpost", query = "SELECT p FROM Post p WHERE "
+            + "p.idpost = :idpost"),
+    @NamedQuery(name = "Post.findByTexto", query = "SELECT p FROM Post p WHERE "
+            + "p.texto = :texto"),
+    @NamedQuery(name = "Post.findByUser", query = "SELECT p FROM Post p WHERE "
+            + "p.nombreusuario = :nombreusuario"),
+    @NamedQuery(name = "Post.findByFechahora", query = "SELECT p FROM Post p "
+            + "WHERE p.fechahora = :fechahora")})
 public class Post implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
