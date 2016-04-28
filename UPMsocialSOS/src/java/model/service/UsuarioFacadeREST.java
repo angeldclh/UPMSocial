@@ -76,7 +76,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     //Obtener lista de amigos y filtrarla por nombre o limitar la cantidad de 
     //información obtenida por número de amigos
     
-    //Tira un bonito Null Pointer
+    //Tira un bonito Null Pointer por el tema del many to many
     @GET
     @Path("{id}/friends")
     @Produces({"application/xml"})
@@ -88,7 +88,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
                 .getResultList();
         
         if(from != 0 && to != 0){
-            results = results.subList(from-1, to+1);
+            results = results.subList(from-1, to+1); //Revisar estos índices
         }
         
         return results;

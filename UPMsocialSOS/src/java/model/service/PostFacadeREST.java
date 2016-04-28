@@ -5,11 +5,16 @@
  */
 package model.service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TemporalType;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -18,6 +23,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -57,7 +63,7 @@ public class PostFacadeREST extends AbstractFacade<Post> {
         entity.setNombreusuario(u);
         entity.setFechahora(new Date());
         //El id del post es la concatenación del nombre de usuario, el string "Post" y el hash de la fecha
-        entity.setIdpost(entity.getNombreusuario().getNombreusuario() 
+        entity.setIdpost(entity.getNombreusuario().getNombreusuario()
                 + "Post" + entity.getFechahora().toString().hashCode());
         entity.setTexto(texto);
         create(entity);
@@ -101,31 +107,45 @@ public class PostFacadeREST extends AbstractFacade<Post> {
     public List<Post> findAll() {
         return super.findAll();
     }
-    
+
     //Obtener los posts de un usuario y filtrar la lista por fecha o limitar la
     //cantidad de información obtenida por número de posts
+    //En la URI se especifica la fecha en formato YYYYMMDD
     @GET
     @Produces({"application/xml"})
-    public List<Post> showPosts(@PathParam("userid") String userid){
+    public List<Post> showPosts(@PathParam("userid") String userid,
+            @QueryParam("date") String fecha) {
+        
         //Obtener usuario u (autor de los posts) a partir de su id
         Usuario u = (Usuario) em.createNamedQuery("Usuario.findByNombreusuario")
                 .setParameter("nombreusuario", userid)
                 .getSingleResult();
-        //A esta query hay que pasarle una variable de la clase Usuario (u)
+        if (fecha != null) {
+            //Parsear la fecha de la URI a un objeto Date
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Date date = null;
+            try {
+                date = sdf.parse(fecha);
+            } catch (ParseException ex) {
+                Logger.getLogger(PostFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return em.createNamedQuery("Post.findByUserAndDate")
+                    .setParameter("nombreusuario", u)
+                    .setParameter("fechahora", date)
+                    .getResultList();
+        }
         return em.createNamedQuery("Post.findByUser")
+                    .setParameter("nombreusuario", u)
+                    .getResultList();
+
+        //A esta query hay que pasarle una variable de la clase Usuario (u)
+        /*return em.createNamedQuery("Post.findByUser")
                 .setParameter("nombreusuario", u)
-                .getResultList();
+                .getResultList();*/
+       
     }
-    
-    
-    
-    
-    
+
 ///////////////////////////////
-    
-    
-    
-    
     //Devuelve los posts de todos los usuarios en el intervalo (from, to). Orden cronológico
     @GET
     @Path("{from}/{to}")
@@ -141,8 +161,7 @@ public class PostFacadeREST extends AbstractFacade<Post> {
     public String countREST() {
         return String.valueOf(super.count());
     }
-  
-    
+
     //Necesario para hacer consultas
     @Override
     protected EntityManager getEntityManager() {

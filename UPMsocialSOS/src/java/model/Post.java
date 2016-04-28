@@ -13,6 +13,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
@@ -38,7 +40,11 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Post.findByUser", query = "SELECT p FROM Post p WHERE "
             + "p.nombreusuario = :nombreusuario"),
     @NamedQuery(name = "Post.findByFechahora", query = "SELECT p FROM Post p "
-            + "WHERE p.fechahora = :fechahora")})
+            + "WHERE p.fechahora >= :fechahora"),
+    @NamedQuery(name = "Post.findByUserAndDate", query = "SELECT p FROM Post p "
+            + "WHERE p.nombreusuario = :nombreusuario AND p.fechahora >= :fechahora")
+})
+
 public class Post implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
