@@ -18,6 +18,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -50,6 +51,8 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     @POST
     @Consumes({"application/xml"})
     public Response create2(Usuario entity, @Context UriInfo uriInfo) {
+        //Almacenar en la BD el hash de la contraseña, no la contraseña en claro
+        entity.setPassword(String.valueOf(entity.getPassword().hashCode()));
         create(entity);
         UriBuilder builder = uriInfo.getAbsolutePathBuilder();
         builder.path(entity.getNombreusuario());
@@ -65,16 +68,16 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         if (user == null || super.find(entity) == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        Collection<Usuario> lista = user.getUsuarioCollection();  
+        Collection<Usuario> lista = user.getUsuarioCollection();
         Usuario amigo = super.find(entity);
-        //Si ya es amigo del amigo de entrada*/
-        if(lista.contains(amigo)){
-         return Response.status(Response.Status.UNAUTHORIZED).build();
-        }   
+        //Si ya es amigo del amigo de entrada
+        if (lista.contains(amigo)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
         lista.add(amigo);
         user.setUsuarioCollection(lista);
         getEntityManager().merge(user);
-        return Response.noContent().build();
+        return Response.status(Response.Status.NO_CONTENT).build();
     }
 
     //Eliminar usuario de la lista de amigos
@@ -87,13 +90,12 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         if (user == null || amigo == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        
-        
+
         Collection<Usuario> lista = user.getUsuarioCollection();
         lista.remove(amigo);
         user.setUsuarioCollection(lista);
         getEntityManager().merge(user);
-        return Response.noContent().build();
+        return Response.status(Response.Status.NO_CONTENT).build();
     }
 
     //Modifica el PERFIL de USUARIO
@@ -111,6 +113,19 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         super.remove(super.find(id));
     }
 
+    
+    //Buscar usuarios (posibles amigos) por patrón
+    @GET
+    @Path("search")
+    @Produces({"application/xml"})
+    public List<Usuario> findPattern(@QueryParam("id") String id) {
+        List results = em.createNamedQuery("Usuario.findByPattern")
+                .setParameter("pattern", "%"+id+"%")
+                .getResultList();
+        return results;
+    }
+
+    //Buscar usuario por id. Devuelve un XML con su perfil
     @GET
     @Path("{id}")
     @Produces({"application/xml"})
