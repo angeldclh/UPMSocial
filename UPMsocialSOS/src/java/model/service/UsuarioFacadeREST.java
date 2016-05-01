@@ -20,7 +20,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
@@ -99,7 +98,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     
     //Añadir un usuario a la lista de amigos: se le pasa text/plain con su nombreusuario (PK)
     @POST
-    @Path("{id}/amigos")
+    @Path("{id}/friends")
     @Consumes({"text/plain"})
     public Response addFriend(@PathParam("id") String id, String entity) {
         Usuario user = super.find(id);
@@ -120,7 +119,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
 
     //Eliminar usuario de la lista de amigos
     @POST
-    @Path("{id}/amigos/{id2}/")
+    @Path("{id}/friends/{id2}/")
     public Response deleteFriend(@PathParam("id") String id, @PathParam("id2") String id2) {
 
         Usuario user = super.find(id);

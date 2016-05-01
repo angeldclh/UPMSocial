@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TemporalType;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -25,6 +24,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.GenericEntity;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
@@ -113,36 +114,56 @@ public class PostFacadeREST extends AbstractFacade<Post> {
     //En la URI se especifica la fecha en formato YYYYMMDD
     @GET
     @Produces({"application/xml"})
-    public List<Post> showPosts(@PathParam("userid") String userid,
-            @QueryParam("date") String fecha) {
-        
+    public Response showPosts(@PathParam("userid") String userid,
+            @QueryParam("date") String fecha, @QueryParam("from") Integer from,
+            @QueryParam("to") Integer to) {
+
         //Obtener usuario u (autor de los posts) a partir de su id
-        Usuario u = (Usuario) em.createNamedQuery("Usuario.findByNombreusuario")
-                .setParameter("nombreusuario", userid)
-                .getSingleResult();
+        Usuario u;
+        try {
+            u = (Usuario) em.createNamedQuery("Usuario.findByNombreusuario")
+                    .setParameter("nombreusuario", userid)
+                    .getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<Post> list;
         if (fecha != null) {
             //Parsear la fecha de la URI a un objeto Date
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            Date date = null;
+            Date date;
             try {
                 date = sdf.parse(fecha);
             } catch (ParseException ex) {
-                Logger.getLogger(PostFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+                return Response.status(Response.Status.NOT_FOUND).build();
             }
-            return em.createNamedQuery("Post.findByUserAndDate")
+            list = em.createNamedQuery("Post.findByUserAndDate")
                     .setParameter("nombreusuario", u)
                     .setParameter("fechahora", date)
                     .getResultList();
-        }
-        return em.createNamedQuery("Post.findByUser")
+
+        } else {
+            list = em.createNamedQuery("Post.findByUser")
                     .setParameter("nombreusuario", u)
                     .getResultList();
+        }
 
-        //A esta query hay que pasarle una variable de la clase Usuario (u)
-        /*return em.createNamedQuery("Post.findByUser")
-                .setParameter("nombreusuario", u)
-                .getResultList();*/
-       
+        //Filtrar por cantidad de información
+        if (from != null && to != null) {
+            //Query sintácticamente correcta, pero semánticamente no
+            if (from > list.size() || to > list.size() || from > to) {
+                return Response.status(422).build();
+            }
+
+            //Para que p ej devuelva el primer post en vez de nada si from=0 y to=0 
+            list = list.subList(from, to + 1);
+        }
+
+        GenericEntity<List<Post>> entity = new GenericEntity<List<Post>>(list) {};
+        
+        return Response.ok(entity).build();
+
     }
 
 ///////////////////////////////
