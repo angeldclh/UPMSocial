@@ -10,6 +10,7 @@ import java.util.Collection;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.CascadeType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -22,6 +23,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import org.eclipse.persistence.annotations.CascadeOnDelete;
 
 /**
  *
@@ -43,6 +45,7 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Usuario.findFriends", query = "SELECT u2 FROM Usuario u "
             + "JOIN u.usuarioCollection u2 WHERE u2.nombreusuario LIKE :pattern")
 })
+@CascadeOnDelete
 public class Usuario implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -74,7 +77,8 @@ public class Usuario implements Serializable {
     private Collection<Usuario> usuarioCollection;//lista de amigos
     @ManyToMany(mappedBy = "usuarioCollection")
     private Collection<Usuario> usuarioCollection1;//Lista de seguidores
-    @OneToMany(mappedBy = "nombreusuario")
+    @OneToMany(mappedBy = "nombreusuario", cascade = CascadeType.ALL, orphanRemoval=true)
+    @CascadeOnDelete
     private Collection<Post> postCollection;
 
     public Usuario() {

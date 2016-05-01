@@ -89,7 +89,7 @@ public class PostFacadeREST extends AbstractFacade<Post> {
     @DELETE
     @Path("{postid}")
     public void remove(@PathParam("postid") String id) {
-        super.remove(super.find(id));
+        //super.remove(super.find(id));
     }
 
     //Devuelve un Post dado su id

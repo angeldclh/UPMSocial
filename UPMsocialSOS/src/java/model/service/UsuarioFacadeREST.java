@@ -46,7 +46,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         super.create(entity);
     }
 
-    //    Crea un nuevo USUARIO
+    //Crea un nuevo USUARIO
     @POST
     @Consumes({"application/xml"})
     public Response create2(Usuario entity, @Context UriInfo uriInfo) {
@@ -59,6 +59,33 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     }
 
     
+    //Modifica el PERFIL de USUARIO
+    @PUT
+    @Path("{id}")
+    @Consumes({"application/xml"})
+    public Response edit(@PathParam("id") String id, Usuario entity, @Context UriInfo uriInfo) {
+        //Almacenar en la BD el hash de la contraseña, no la contraseña en claro
+        entity.setPassword(String.valueOf(entity.getPassword().hashCode()));
+        super.edit(entity);
+        UriBuilder builder = uriInfo.getAbsolutePathBuilder();
+        return Response.created(builder.build()).build();
+        
+    }
+
+    //Elimina un USUARIO o su "perfil"
+    @DELETE
+    @Path("{id}")
+    public Response remove(@PathParam("id") String id) {
+        /*Usuario u;
+        if((u = super.find(id)) == null)
+            return Response.status(Response.Status.NOT_FOUND).build();
+        super.remove(u);
+        return Response.status(Response.Status.NO_CONTENT).build();*/
+        super.remove(super.find(id));
+        return Response.status(Response.Status.NO_CONTENT).build();
+    }
+
+  
     //Buscar usuarios (posibles amigos) por patrón
     //Si la URI es /search devuelve todos los usuarios de la red
     @GET
@@ -135,21 +162,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         return Response.status(Response.Status.NO_CONTENT).build();
     }
 
-    //Modifica el PERFIL de USUARIO
-    @PUT
-    @Path("{id}")
-    @Consumes({"application/xml"})
-    public void edit(@PathParam("id") String id, Usuario entity) {
-        super.edit(entity);
-    }
-
-    //Elimina un USUARIO o su "perfil"
-    @DELETE
-    @Path("{id}")
-    public void remove(@PathParam("id") String id) {
-        super.remove(super.find(id));
-    }
-
+    
     
 
     //Buscar usuario por id. Devuelve un XML con su perfil
