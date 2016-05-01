@@ -111,7 +111,7 @@ public class PostFacadeREST extends AbstractFacade<Post> {
 
     //Obtener los posts de un usuario y filtrar la lista por fecha o limitar la
     //cantidad de información obtenida por número de posts
-    //En la URI se especifica la fecha en formato YYYYMMDD
+    //En la URI se especifica la fecha en formato YYYY-MM-DD
     @GET
     @Produces({"application/xml"})
     public Response showPosts(@PathParam("userid") String userid,
@@ -124,7 +124,8 @@ public class PostFacadeREST extends AbstractFacade<Post> {
             u = (Usuario) em.createNamedQuery("Usuario.findByNombreusuario")
                     .setParameter("nombreusuario", userid)
                     .getSingleResult();
-        } catch (javax.persistence.NoResultException e) {
+        } catch (javax.persistence.NoResultException ex) {
+            Logger.getLogger(PostFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -136,6 +137,7 @@ public class PostFacadeREST extends AbstractFacade<Post> {
             try {
                 date = sdf.parse(fecha);
             } catch (ParseException ex) {
+                Logger.getLogger(PostFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
             list = em.createNamedQuery("Post.findByUserAndDate")
@@ -160,10 +162,56 @@ public class PostFacadeREST extends AbstractFacade<Post> {
             list = list.subList(from, to + 1);
         }
 
-        GenericEntity<List<Post>> entity = new GenericEntity<List<Post>>(list) {};
-        
+        GenericEntity<List<Post>> entity = new GenericEntity<List<Post>>(list) {
+        };
+
         return Response.ok(entity).build();
 
+    }
+
+    //Obtener el número de post publicados por mi en la red social 
+    //en un determinado periodo(fecha de inicio y fin)
+    //Las fechas incluyen como hora 00:00, por lo que si from=to va a devolver 0
+    @GET
+    @Path("nPosts")
+    @Produces({"text/plain"})
+    public Response nPosts(@PathParam("userid") String userid, @QueryParam("date1") String date1,
+            @QueryParam("date2") String date2) {
+        //usuario autor de los posts
+        Usuario u;
+        List<Post> list;
+        try {
+            u = (Usuario) em.createNamedQuery("Usuario.findByNombreusuario")
+                    .setParameter("nombreusuario", userid)
+                    .getSingleResult();
+        } catch (javax.persistence.NoResultException ex) {
+            Logger.getLogger(PostFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        if (date1 != null && date2 != null) {
+            //Parsear la fecha de la URI a un objeto Date
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Date fecha1;
+            Date fecha2;
+            try {
+                fecha1 = sdf.parse(date1);
+                fecha2 = sdf.parse(date2);
+            } catch (ParseException ex) {
+                Logger.getLogger(PostFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+            list = em.createNamedQuery("Post.findByUserAndTwoDates")
+                    .setParameter("nombreusuario", u)
+                    .setParameter("fechahora", fecha1)
+                    .setParameter("fechahora1", fecha2)
+                    .getResultList();
+        } else {
+            list = em.createNamedQuery("Post.findByUser")
+                    .setParameter("nombreusuario", u)
+                    .getResultList();
+        }
+
+        return Response.ok(list.size()).build();
     }
 
 ///////////////////////////////

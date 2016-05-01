@@ -42,7 +42,10 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Post.findByFechahora", query = "SELECT p FROM Post p "
             + "WHERE p.fechahora >= :fechahora"),
     @NamedQuery(name = "Post.findByUserAndDate", query = "SELECT p FROM Post p "
-            + "WHERE p.nombreusuario = :nombreusuario AND p.fechahora >= :fechahora")
+            + "WHERE p.nombreusuario = :nombreusuario AND p.fechahora >= :fechahora"),
+    @NamedQuery(name = "Post.findByUserAndTwoDates", query = "SELECT p FROM Post p "
+            + "WHERE p.nombreusuario = :nombreusuario AND p.fechahora >= :fechahora "
+            + "AND p.fechahora < :fechahora1")
 })
 
 public class Post implements Serializable {
