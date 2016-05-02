@@ -42,8 +42,8 @@ import org.eclipse.persistence.annotations.CascadeOnDelete;
             + "u WHERE u.nombrereal = :nombrereal"),
     @NamedQuery(name = "Usuario.findByEmail", query = "SELECT u FROM Usuario u "
             + "WHERE u.email = :email"),
-    @NamedQuery(name = "Usuario.findFriends", query = "SELECT u2 FROM Usuario u "
-            + "JOIN u.usuarioCollection u2 WHERE u2.nombreusuario LIKE :pattern")
+    @NamedQuery(name = "Usuario.getFriends", query = "SELECT u u2 FROM Usuario u "
+            + "WHERE u.nombreusuario = :nombreusuario AND u2 MEMBER OF u.usuarioCollection")
 })
 @CascadeOnDelete
 public class Usuario implements Serializable {
