@@ -64,25 +64,33 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     @Path("{id}")
     @Consumes({"application/xml"})
     public Response edit(@PathParam("id") String id, Usuario entity, @Context UriInfo uriInfo) {
+        //Devolver not found si el id de la URI no corresponde a ningún usuario
+        Usuario u;
+        if((u = super.find(id)) == null)
+            return Response.status(Response.Status.NOT_FOUND).build();
+        //Devolver forbidden si se intenta cambiar el nombre de usuario
+        if (!u.getNombreusuario().equals(entity.getNombreusuario()))
+            return Response.status(Response.Status.FORBIDDEN).build();
         //Almacenar en la BD el hash de la contraseña, no la contraseña en claro
         entity.setPassword(String.valueOf(entity.getPassword().hashCode()));
         super.edit(entity);
+        //Cabecera Location
         UriBuilder builder = uriInfo.getAbsolutePathBuilder();
-        return Response.created(builder.build()).build();
+        return Response.status(Response.Status.NO_CONTENT).location(builder.build()).build();
         
     }
 
-    //Elimina un USUARIO o su "perfil"
+    //Elimina un USUARIO o su "perfil". Error 500 si user tiene posts (foreign key violation restriction)
     @DELETE
     @Path("{id}")
     public Response remove(@PathParam("id") String id) {
-        /*Usuario u;
+        Usuario u;
+        //404 si el usuario que se quiere eliminar no existe
         if((u = super.find(id)) == null)
             return Response.status(Response.Status.NOT_FOUND).build();
         super.remove(u);
-        return Response.status(Response.Status.NO_CONTENT).build();*/
-        super.remove(super.find(id));
         return Response.status(Response.Status.NO_CONTENT).build();
+        
     }
 
   
@@ -99,9 +107,9 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         return results;
     }
 
-    //Obtener lista de amigos y filtrarla por nombre o limitar la cantidad de 
-    //información obtenida por número de amigos
     
+    //Obtener lista de amigos y filtrarla por nombre o limitar la cantidad de 
+    //información obtenida por número de amigos   
     //Tira un bonito Null Pointer por el tema del many to many
     @GET
     @Path("{id}/friends")
@@ -110,11 +118,11 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     Integer from, @QueryParam("to") Integer to){
         if(id==null) id = "";
         List results = em.createNamedQuery("Usuario.findFriends")
-                .setParameter("pattern", "%"+id+"%") //Búsqueda an: salen angel y ana, pero no manuel
+                .setParameter("pattern", id+"%") //Búsqueda an: salen angel y ana, pero no manuel
                 .getResultList();
         
         if(from != 0 && to != 0){
-            results = results.subList(from-1, to+1); //Revisar estos índices
+            results = results.subList(from, to+1); //Revisar estos índices
         }
         
         return results;
@@ -127,13 +135,14 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     @POST
     @Path("{id}/friends")
     @Consumes({"text/plain"})
-    public Response addFriend(@PathParam("id") String id, String entity) {
+    public Response addFriend(@PathParam("id") String id, String friendid) {
         Usuario user = super.find(id);
-        if (user == null || super.find(entity) == null) {
+        Usuario amigo = super.find(friendid);
+        //Si el usuario de la URI o el nuevo amigo no existen, error 404
+        if (user == null || amigo == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         Collection<Usuario> lista = user.getUsuarioCollection();
-        Usuario amigo = super.find(entity);
         //Si ya es amigo del amigo de entrada
         if (lista.contains(amigo)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();

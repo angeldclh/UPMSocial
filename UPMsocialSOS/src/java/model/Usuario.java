@@ -77,7 +77,7 @@ public class Usuario implements Serializable {
     private Collection<Usuario> usuarioCollection;//lista de amigos
     @ManyToMany(mappedBy = "usuarioCollection")
     private Collection<Usuario> usuarioCollection1;//Lista de seguidores
-    @OneToMany(mappedBy = "nombreusuario", cascade = CascadeType.ALL, orphanRemoval=true)
+    @OneToMany(mappedBy = "nombreusuario", orphanRemoval=true, cascade = {CascadeType.ALL})
     @CascadeOnDelete
     private Collection<Post> postCollection;
 

@@ -78,18 +78,32 @@ public class PostFacadeREST extends AbstractFacade<Post> {
     @PUT
     @Path("{postid}")
     @Consumes({"text/plain"})
-    public void edit(@PathParam("postid") String id, String texto) {
-        Post entity = find(id);
+    public Response edit(@PathParam("userid") String userid, @PathParam("postid") String postid,
+            String texto, @Context UriInfo uriInfo) {
+        Post entity = find(postid);
+        //Error 404 si el idpost no existe o si el userid de la URI no se corresponde con el autor del post
+        if (entity == null || !entity.getNombreusuario().getNombreusuario().equals(userid)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
         entity.setTexto(texto);
         entity.setFechahora(new Date());
+        //El id no cambia ya que es la clave primaria
         super.edit(entity);
+        //Cabecera Location + no content
+        UriBuilder builder = uriInfo.getAbsolutePathBuilder();
+        return Response.status(Response.Status.NO_CONTENT).location(builder.build()).build();
     }
 
     //Eliminar un POST pasándole su id
     @DELETE
     @Path("{postid}")
-    public void remove(@PathParam("postid") String id) {
-        //super.remove(super.find(id));
+    public Response remove(@PathParam("postid") String id) {
+        Post p = super.find(id);
+        if (p == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        super.remove(super.find(id));
+        return Response.status(Response.Status.NO_CONTENT).build();
     }
 
     //Devuelve un Post dado su id
@@ -125,6 +139,7 @@ public class PostFacadeREST extends AbstractFacade<Post> {
                     .setParameter("nombreusuario", userid)
                     .getSingleResult();
         } catch (javax.persistence.NoResultException ex) {
+            //Si no hay ningún usuario con nombreusuario userid, 404
             Logger.getLogger(PostFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -137,15 +152,16 @@ public class PostFacadeREST extends AbstractFacade<Post> {
             try {
                 date = sdf.parse(fecha);
             } catch (ParseException ex) {
+                //La fecha de la URI no se parsea correctamente (formato incorrecto) = 400
                 Logger.getLogger(PostFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
-                return Response.status(Response.Status.NOT_FOUND).build();
+                return Response.status(Response.Status.BAD_REQUEST).build();
             }
             list = em.createNamedQuery("Post.findByUserAndDate")
                     .setParameter("nombreusuario", u)
                     .setParameter("fechahora", date)
                     .getResultList();
 
-        } else {
+        } else { //No se especifica fecha -> todos los posts del usuario especificado
             list = em.createNamedQuery("Post.findByUser")
                     .setParameter("nombreusuario", u)
                     .getResultList();
