@@ -116,14 +116,14 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     @GET
     @Path("{id}/friends")
     @Produces({"application/xml"})
-    public List<Usuario> findFriend(@QueryParam("id") String id, @QueryParam("from") Integer from, @QueryParam("to") Integer to) {
+    public List<Usuario> findFriends(@PathParam("id") String id, @QueryParam("from") Integer from, @QueryParam("to") Integer to) {
         //if(id==null) id = "";
         List results = em.createNamedQuery("Usuario.getFriends")
                 .setParameter("nombreusuario", id)
                 //.setParameter("pattern", id+"%") //Búsqueda an: salen angel y ana, pero no manuel
                 .getResultList();
 
-        if (from != 0 && to != 0) {
+        if (from != null && to != null) {
             results = results.subList(from, to + 1); //Revisar estos índices
         }
 
