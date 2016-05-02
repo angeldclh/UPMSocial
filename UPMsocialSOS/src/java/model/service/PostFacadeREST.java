@@ -48,15 +48,10 @@ public class PostFacadeREST extends AbstractFacade<Post> {
     }
 
     //Crear un POST
-    @Override
-    public void create(Post entity) {
-        super.create(entity);
-    }
-
     //Se recibe solo texto plano. El usuario se obtiene de la URI y la fecha es la actual
     @POST
     @Consumes({"text/plain"})
-    public Response create2(@PathParam("userid") String id, String texto, @Context UriInfo uriInfo) {
+    public Response create(@PathParam("userid") String id, String texto, @Context UriInfo uriInfo) {
         Post entity = new Post();
         Usuario u = (Usuario) em.createNamedQuery("Usuario.findByNombreusuario")
                 .setParameter("nombreusuario", id)
@@ -67,7 +62,7 @@ public class PostFacadeREST extends AbstractFacade<Post> {
         entity.setIdpost(entity.getNombreusuario().getNombreusuario()
                 + "Post" + entity.getFechahora().toString().hashCode());
         entity.setTexto(texto);
-        create(entity);
+        super.create(entity);
         //Para la response
         UriBuilder builder = uriInfo.getAbsolutePathBuilder();
         builder.path(entity.getIdpost());
