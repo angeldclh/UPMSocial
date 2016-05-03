@@ -5,6 +5,7 @@
  */
 package model.service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -20,9 +21,11 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import model.Post;
 import model.Usuario;
 
 /**
@@ -112,15 +115,16 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
 
     //Obtener lista de amigos y filtrarla por nombre o limitar la cantidad de 
     //información obtenida por número de amigos   
-    //Tira un bonito Null Pointer por el tema del many to many
+    //Añadir Responses
     @GET
     @Path("{id}/friends")
     @Produces({"application/xml"})
-    public List<Usuario> findFriends(@PathParam("id") String id, @QueryParam("from") Integer from, @QueryParam("to") Integer to) {
-        //if(id==null) id = "";
-        List results = em.createNamedQuery("Usuario.getFriends")
+    public List<Usuario> findFriends(@PathParam("id") String id,
+            @QueryParam("from") Integer from, @QueryParam("to") Integer to) {
+
+        List<Usuario> results = em.createNamedQuery("Usuario.getFriends")
                 .setParameter("nombreusuario", id)
-                //.setParameter("pattern", id+"%") //Búsqueda an: salen angel y ana, pero no manuel
+                //.setParameter("pattern", id + "%") //Búsqueda an: salen angel y ana, pero no manuel
                 .getResultList();
 
         if (from != null && to != null) {
@@ -173,6 +177,31 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         getEntityManager().merge(user);
 
         return Response.status(Response.Status.NO_CONTENT).build();
+    }
+
+    //Obtener los posts de los amigos de un usuario
+    @GET
+    @Path("{id}/timeline")
+    public Response getTimeline(@PathParam("id") String id) {
+        //El id de la URI no corresponse a ningún usuario -> 404 not found
+        if (find(id) == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        List<Usuario> listaAmigos = em.createNamedQuery("Usuario.getFriends")
+                .setParameter("nombreusuario", id)
+                .getResultList();
+
+        List<Post> timeline = new ArrayList<>();
+        for (Usuario user : listaAmigos){
+            timeline.addAll(em.createNamedQuery("Post.findByUser")
+                    .setParameter("nombreusuario", user)
+                    .getResultList());
+        }
+        
+        GenericEntity<List<Post>> entity = new GenericEntity<List<Post>>(timeline) {
+        };
+
+        return Response.ok(entity).build();
     }
 
     //Buscar usuario por id. Devuelve un XML con su perfil

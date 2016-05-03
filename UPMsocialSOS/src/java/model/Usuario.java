@@ -37,17 +37,18 @@ import org.eclipse.persistence.annotations.CascadeOnDelete;
     @NamedQuery(name = "Usuario.findByNombreusuario", query = "SELECT u FROM "
             + "Usuario u WHERE u.nombreusuario = :nombreusuario"),
     @NamedQuery(name = "Usuario.findByPattern", query = "SELECT u FROM Usuario u "
-            + "WHERE  u.nombreusuario LIKE :pattern"),
+            + "WHERE  u.nombreusuario LIKE :pattern" ),
     @NamedQuery(name = "Usuario.findByNombrereal", query = "SELECT u FROM Usuario "
             + "u WHERE u.nombrereal = :nombrereal"),
     @NamedQuery(name = "Usuario.findByEmail", query = "SELECT u FROM Usuario u "
             + "WHERE u.email = :email"),
     @NamedQuery(name = "Usuario.getFriends", query = "SELECT u2 FROM Usuario u "
-            + "JOIN u.usuarioCollection u2 WHERE u.nombreusuario = :nombreusuario") // WHERE u2.nombreusuario LIKE :pattern")
+            + "JOIN u.usuarioCollection u2 WHERE u.nombreusuario = :nombreusuario")// WHERE u2.nombreusuario LIKE :pattern")
 })
+/* Obtener posts de mis amigos puede que sea algo así:
+    SELECT p FROM Post p, Usuario u WHERE p.nombreusuario MEMBER OF u.usuarioCollection */
 @CascadeOnDelete
 public class Usuario implements Serializable {
-
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -78,7 +79,7 @@ public class Usuario implements Serializable {
     private Collection<Usuario> usuarioCollection;//lista de amigos
     @ManyToMany(mappedBy = "usuarioCollection")
     private Collection<Usuario> usuarioCollection1;//Lista de seguidores
-    @OneToMany(mappedBy = "nombreusuario", orphanRemoval = true, cascade = {CascadeType.ALL})
+    @OneToMany(mappedBy = "nombreusuario", orphanRemoval=true, cascade = {CascadeType.ALL})
     @CascadeOnDelete
     private Collection<Post> postCollection;
 
@@ -93,7 +94,7 @@ public class Usuario implements Serializable {
         this.nombreusuario = nombreusuario;
         this.nombrereal = nombrereal;
         this.email = email;
-        this.password = password;
+        this.password = password; 
     }
 
     public String getNombreusuario() {
@@ -179,5 +180,5 @@ public class Usuario implements Serializable {
     public String toString() {
         return "model.Usuario[ nombreusuario=" + nombreusuario + " ]";
     }
-
+    
 }
