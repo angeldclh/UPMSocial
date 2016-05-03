@@ -7,6 +7,7 @@ package model.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -43,19 +44,13 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         super(Usuario.class);
     }
 
-    //Guarda bbdd un nuevo USUARIO
-    @Override
-    public void create(Usuario entity) {
-        super.create(entity);
-    }
-
     //Crea un nuevo USUARIO
     @POST
     @Consumes({"application/xml"})
-    public Response create2(Usuario entity, @Context UriInfo uriInfo) {
+    public Response create(Usuario entity, @Context UriInfo uriInfo) {
         //Almacenar en la BD el hash de la contraseña, no la contraseña en claro
         entity.setPassword(String.valueOf(entity.getPassword().hashCode()));
-        create(entity);
+        super.create(entity);
         UriBuilder builder = uriInfo.getAbsolutePathBuilder();
         builder.path(entity.getNombreusuario());
         return Response.created(builder.build()).build();
@@ -71,7 +66,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         if ((u = super.find(id)) == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        //Devolver forbidden si se intenta cambiar el nombre de usuario
+        //Devolver forbidden si se intenta cambiar el nombre de usuario (PK)
         if (!u.getNombreusuario().equals(entity.getNombreusuario())) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
@@ -84,7 +79,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
 
     }
 
-    //Elimina un USUARIO o su "perfil". Error 500 si user tiene posts (foreign key violation restriction)
+    //Elimina un USUARIO o su "perfil". 
     @DELETE
     @Path("{id}")
     public Response remove(@PathParam("id") String id) {
@@ -100,6 +95,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
 
     //Buscar usuarios (posibles amigos) por patrón
     //Si la URI es /search devuelve todos los usuarios de la red
+    //Devuelve siempre 200 OK aunque la lista sea vacía (Twitter y Facebook)
     @GET
     @Path("search")
     @Produces({"application/xml"})
@@ -119,8 +115,12 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     @GET
     @Path("{id}/friends")
     @Produces({"application/xml"})
-    public List<Usuario> findFriends(@PathParam("id") String id,
+    public Response findFriends(@PathParam("id") String id,
             @QueryParam("from") Integer from, @QueryParam("to") Integer to) {
+        //El id de la URI no corresponde a ningún usuario -> 404 not found
+        if (find(id) == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         List<Usuario> results = em.createNamedQuery("Usuario.getFriends")
                 .setParameter("nombreusuario", id)
@@ -131,7 +131,11 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
             results = results.subList(from, to + 1); //Revisar estos índices
         }
 
-        return results;
+        //Devolver OK 200 + lista amigos en XML
+        GenericEntity<List<Usuario>> entity = new GenericEntity<List<Usuario>>(results) {
+        };
+        return Response.ok(entity).build();
+
     }
 
     //Añadir un usuario a la lista de amigos: se le pasa text/plain con su nombreusuario (PK)
@@ -180,6 +184,7 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
     }
 
     //Obtener los posts de los amigos de un usuario
+    //En el XML aparece primero el post más reciente
     @GET
     @Path("{id}/timeline")
     public Response getTimeline(@PathParam("id") String id) {
@@ -190,13 +195,10 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         List<Usuario> listaAmigos = em.createNamedQuery("Usuario.getFriends")
                 .setParameter("nombreusuario", id)
                 .getResultList();
-
-        List<Post> timeline = new ArrayList<>();
-        for (Usuario user : listaAmigos){
-            timeline.addAll(em.createNamedQuery("Post.findByUser")
-                    .setParameter("nombreusuario", user)
-                    .getResultList());
-        }
+        
+        List<Post> timeline = em.createNamedQuery("Post.getTimeline")
+                .setParameter("listaamigos", listaAmigos)
+                .getResultList();
         
         GenericEntity<List<Post>> entity = new GenericEntity<List<Post>>(timeline) {
         };
@@ -220,20 +222,8 @@ public class UsuarioFacadeREST extends AbstractFacade<Usuario> {
         return super.findAll();
     }
 
-    @GET
-    @Path("{from}/{to}")
-    @Produces({"application/xml"})
-    public List<Usuario> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
-        return super.findRange(new int[]{from, to});
-    }
-
-    @GET
-    @Path("count")
-    @Produces("text/plain")
-    public String countREST() {
-        return String.valueOf(super.count());
-    }
-
+    
+    
     @Override
     protected EntityManager getEntityManager() {
         return em;

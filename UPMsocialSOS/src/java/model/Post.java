@@ -8,7 +8,6 @@ package model;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -44,7 +43,10 @@ import javax.xml.bind.annotation.XmlRootElement;
             + "WHERE p.nombreusuario = :nombreusuario AND p.fechahora >= :fechahora"),
     @NamedQuery(name = "Post.findByUserAndTwoDates", query = "SELECT p FROM Post p "
             + "WHERE p.nombreusuario = :nombreusuario AND p.fechahora >= :fechahora "
-            + "AND p.fechahora < :fechahora1")
+            + "AND p.fechahora < :fechahora1"),
+    @NamedQuery(name = "Post.getTimeline", query = "SELECT p FROM Post p "
+            + "WHERE p.nombreusuario IN :listaamigos "
+            + "ORDER BY p.fechahora DESC")
 })
 
 public class Post implements Serializable {
