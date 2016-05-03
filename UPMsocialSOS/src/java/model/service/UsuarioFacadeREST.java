@@ -29,10 +29,6 @@ import javax.ws.rs.core.UriInfo;
 import model.Post;
 import model.Usuario;
 
-/**
- *
- * @author RAFAEL
- */
 @Stateless
 @Path("users")
 public class UsuarioFacadeREST extends AbstractFacade<Usuario> {

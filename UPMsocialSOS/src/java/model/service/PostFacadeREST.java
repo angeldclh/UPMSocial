@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package model.service;
 
 import java.text.ParseException;
@@ -31,10 +27,7 @@ import javax.ws.rs.core.UriInfo;
 import model.Post;
 import model.Usuario;
 
-/**
- *
- * @author RAFAEL
- */
+
 @Stateless
 @Path("/users/{userid}/posts")
 public class PostFacadeREST extends AbstractFacade<Post> {
@@ -52,9 +45,18 @@ public class PostFacadeREST extends AbstractFacade<Post> {
     @Consumes({"text/plain"})
     public Response create(@PathParam("userid") String id, String texto, @Context UriInfo uriInfo) {
         Post entity = new Post();
-        Usuario u = (Usuario) em.createNamedQuery("Usuario.findByNombreusuario")
+        
+        Usuario u;
+        try{
+            u= (Usuario) em.createNamedQuery("Usuario.findByNombreusuario")
                 .setParameter("nombreusuario", id)
                 .getSingleResult();
+        } catch(javax.persistence.NoResultException ex){
+            //El userid de la URI no corresponde a ningún usuario -> 404 not found
+            Logger.getLogger(PostFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        
         entity.setNombreusuario(u);
         entity.setFechahora(new Date());
         //El id del post es la concatenación del nombre de usuario, el string "Post" y el hash de la fecha
@@ -100,22 +102,8 @@ public class PostFacadeREST extends AbstractFacade<Post> {
         return Response.status(Response.Status.NO_CONTENT).build();
     }
 
-    //Devuelve un Post dado su id
-    @GET
-    @Path("{postid}")
-    @Produces({"application/xml"})
-    public Post find(@PathParam("postid") String id) {
-        return super.find(id);
-    }
-
-    //Devuelve todos los posts de UPMSocial (para debug)
-    @GET
-    @Override
-    @Path("all")
-    @Produces({"application/xml"})
-    public List<Post> findAll() {
-        return super.findAll();
-    }
+    
+  
 
     //Obtener los posts de un usuario y filtrar la lista por fecha o limitar la
     //cantidad de información obtenida por número de posts
@@ -224,21 +212,25 @@ public class PostFacadeREST extends AbstractFacade<Post> {
         return Response.ok(list.size()).build();
     }
 
-///////////////////////////////
-    //Devuelve los posts de todos los usuarios en el intervalo (from, to). Orden cronológico
+    ///////////////////////////////
+    ///////////////////////////////
+    //Debug:
+    
+    //Devuelve un Post dado su id
     @GET
-    @Path("{from}/{to}")
+    @Path("{postid}")
     @Produces({"application/xml"})
-    public List<Post> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
-        return super.findRange(new int[]{from, to});
+    public Post find(@PathParam("postid") String id) {
+        return super.find(id);
     }
 
-    //Devuelve el número de posts
+    //Devuelve todos los posts de UPMSocial (para debug)
     @GET
-    @Path("count")
-    @Produces("text/plain")
-    public String countREST() {
-        return String.valueOf(super.count());
+    @Override
+    @Path("all")
+    @Produces({"application/xml"})
+    public List<Post> findAll() {
+        return super.findAll();
     }
 
     //Necesario para hacer consultas

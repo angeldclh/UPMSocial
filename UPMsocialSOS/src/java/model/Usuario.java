@@ -25,10 +25,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.eclipse.persistence.annotations.CascadeOnDelete;
 
-/**
- *
- * @author RAFAEL
- */
+
 @Entity
 @Table(name = "USUARIO")
 @XmlRootElement
