@@ -1,1 +1,1 @@
-Práctica REST de SSDD en NetBeans
+Práctica REST de SOS en NetBeans
